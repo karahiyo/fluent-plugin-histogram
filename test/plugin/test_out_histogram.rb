@@ -16,7 +16,9 @@ class HistogramOutputTest < Test::Unit::TestCase
   end
 
   def test_configure
-    create_driver
+    assert_raise(Fluent::ConfigError) {
+      create_driver %[ bin_num 0]
+    }
   end
 
   def test_one_increment
