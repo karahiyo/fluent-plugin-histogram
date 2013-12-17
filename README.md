@@ -1,6 +1,7 @@
-# Fluent::Plugin::Histogram
+# fluent-plugin-histogram
 
-TODO: Write a gem description
+Fluent plugin to count message keys, 
+and make histogram to help detecting hotspot problem.
 
 ## Installation
 
@@ -15,10 +16,6 @@ And then execute:
 Or install it yourself as:
 
     $ gem install fluent-plugin-histogram
-
-## Usage
-
-TODO: Write usage instructions here
 
 ## Contributing
 
