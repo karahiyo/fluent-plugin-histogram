@@ -69,5 +69,34 @@ module Fluent
       end
     end
 
+    def increment(tag, key)
+      @hists[tag] ||= {:data => @init_hist.dup}
+      hashed = key.hash % @bin_num
+      @hists[tag][:data][hashed] += 1
+    end
+
+    def emit(tag, es, chain)
+      es.each do |time, record|
+         keys = record[@count_key]
+         [keys].flatten.each {|k| increment(tag, k)}
+      end
+
+      chain.next
+    end
+
+    def flush
+      flushed, @hists = @hists, initialize_hists(@hists.keys.dup)
+      flushed
+    end
+
+    def flush_emit
+      flushed = flush
+      now = Fluent::Engine.now
+      flushed.each do |tag, data|
+        Fluent::Engine.emit(tag, now, data)
+      end
+    end
+
+
   end
 end
