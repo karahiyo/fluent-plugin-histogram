@@ -10,7 +10,7 @@ module Fluent
 
     attr_accessor :flush_interval
     attr_accessor :hists
-    attr_accessor :init_hist
+    attr_accessor :zero_hist
 
     ## fluentd output plugin's methods
 
@@ -21,7 +21,7 @@ module Fluent
     def configure(conf)
       super
 
-      raise Fluent::ConfigError, "bin_num must be > 0" unless @bin_num <= 0
+      raise Fluent::ConfigError, "bin_num must be > 0" if @bin_num <= 0
 
       @tag_prefix_string = @tag_prefix + '.' if @tag_prefix
       if @input_tag_remove_prefix
@@ -29,7 +29,7 @@ module Fluent
         @remove_prefix_length = @remove_prefix_string.length
       end
 
-      @init_hist = @bin_num.times.map{0}
+      @zero_hist = @bin_num.times.map{0}
       @hists = initialize_hists
     end
 
@@ -60,17 +60,17 @@ module Fluent
     ## Histogram plugin's method
 
     def initialize_hists(tags=nil)
+      hists = {}
       if tags
         tags.each do |tag|
-          hists[tag] = {:data => @init_hist.dup}
+          hists[tag] = {:data => @zero_hist.dup}
         end
-      else
-        {}
       end
+      hists
     end
 
     def increment(tag, key)
-      @hists[tag] ||= {:data => @init_hist.dup}
+      @hists[tag] ||= {:data => @zero_hist.dup}
       hashed = key.hash % @bin_num
       @hists[tag][:data][hashed] += 1
     end
