@@ -30,6 +30,20 @@ class HistogramOutputTest < Test::Unit::TestCase
     assert_equal({"test.input" => {:data => zero}}, f.instance.flush)
   end
 
+  def test_tag_add_remove
+    f = create_driver(%[tag_prefix histo])
+    f.instance.increment("test",  "A")
+    flushed = f.instance.flush
+    assert_equal(true, flushed.key?("histo.test"))
+
+    f = create_driver(%[
+                      tag_prefix histo
+                      input_tag_remove_prefix test])
+    f.instance.increment("test", "A")
+    flushed = f.instance.flush
+    assert_equal(true, flushed.key?("histo"))
+  end
+
   def test_increment_sum
     bin_num = 100
     f = create_driver %[ bin_num #{bin_num}]

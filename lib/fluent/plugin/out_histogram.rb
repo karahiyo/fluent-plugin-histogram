@@ -2,7 +2,7 @@ module Fluent
   class HistogramOutput < Fluent::Output
     Fluent::Plugin.register_output('histogram', self)
 
-    config_param :tag_prefix, :string, :default => 'histo'
+    config_param :tag_prefix, :string, :default => nil
     config_param :input_tag_remove_prefix, :string, :default => nil
     config_param :flush_interval, :time, :default => 60
     config_param :count_key, :string, :default => 'keys'
@@ -83,10 +83,18 @@ module Fluent
 
       chain.next
     end
+    
+    def tagging(flushed)
+      tagged = {}
+      flushed.each do |tag, hist|
+        tagged[add_prefix(strip_tag(tag))] = hist
+      end
+      tagged
+    end
 
     def flush
       flushed, @hists = @hists, initialize_hists(@hists.keys.dup)
-      flushed
+      tagging(flushed)
     end
 
     def flush_emit
@@ -97,6 +105,18 @@ module Fluent
       end
     end
 
+    def add_prefix(tag="")
+      return tag unless @tag_prefix
+      return @tag_prefix if tag.empty?
+      return @tag_prefix_string + tag
+    end
+
+    def strip_tag(tag)
+      return tag unless @input_tag_remove_prefix
+      return tag[@remove_prefix_length..-1] if tag.start_with? @remove_prefix_string && tag.length > @remove_prefix_length
+      return "" if tag == @input_tag_remove_prefix
+      tag
+    end
 
   end
 end
