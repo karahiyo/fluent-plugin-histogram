@@ -31,7 +31,7 @@ class HistogramOutputTest < Test::Unit::TestCase
     zero = f.instance.zero_hist
     zero["A".hash % bin_num] += 1
     zero["B".hash % bin_num] += 1
-    assert_equal({"test.input" => {:hist => zero, :sum => 2, :ave => 2.0/bin_num, :len=>2}}, 
+    assert_equal({"test.input" => {:hist => zero, :sum => 2, :avg => 2/bin_num, :sd=>0}}, 
                  f.instance.flush)
   end
 
@@ -57,7 +57,7 @@ class HistogramOutputTest < Test::Unit::TestCase
     end
     flushed = f.instance.flush
     assert_equal(1000, flushed["test.input"][:sum])
-    assert_equal(1000.to_f / bin_num, flushed["test.input"][:ave])
+    assert_equal(1000 / bin_num, flushed["test.input"][:avg])
   end
 
   def test_emit
@@ -70,8 +70,7 @@ class HistogramOutputTest < Test::Unit::TestCase
     end
     flushed = f.instance.flush
     assert_equal(100*3, flushed["test"][:sum])
-    assert_equal(100*3.to_f / bin_num, flushed["test"][:ave])
-    assert_equal(3, flushed["test"][:len])
+    assert_equal(100*3 / bin_num, flushed["test"][:avg])
   end
 
 end

@@ -30,7 +30,7 @@ module Fluent
         @remove_prefix_length = @remove_prefix_string.length
       end
 
-      @zero_hist = @bin_num.times.map{0}
+      @zero_hist = [0] * @bin_num
 
       @hists = initialize_hists
       @mutex = Mutex.new
@@ -48,7 +48,7 @@ module Fluent
         sleep 0.5
         if Fluent::Engine.now - @last_checked >= @flush_interval
           now = Fluent::Engine.now
-          flush_emit
+          flush_emit(now)
           @last_checked = now
         end
       end
@@ -82,12 +82,12 @@ module Fluent
     end
 
     def emit(tag, es, chain)
+      chain.next
+
       es.each do |time, record|
          keys = record[@count_key]
          [keys].flatten.each {|k| increment(tag, k)}
       end
-
-      chain.next
     end
     
     def tagging(flushed)
@@ -102,13 +102,16 @@ module Fluent
       output = {}
       flushed.each do |tag, hist|
         output[tag] = {}
-        act_hist = hist.select {|v| v != 0}
-        len = act_hist.length
-        sum = act_hist.inject(:+)
+        sum = hist.inject(:+)
+        avg = sum.to_f / hist.size
+        sd = hist.instance_eval do
+          sigmas = map { |n| (avg - n)**2 }
+          Math.sqrt(sigmas.inject(:+) / size)
+        end
         output[tag][:hist] = hist
         output[tag][:sum] = sum
-        output[tag][:ave] = sum.to_f / @bin_num
-        output[tag][:len] = len
+        output[tag][:avg] = avg.to_i
+        output[tag][:sd] = sd.to_i
       end
       output
     end
@@ -118,9 +121,8 @@ module Fluent
       tagging(flushed)
     end
 
-    def flush_emit
+    def flush_emit(now)
       flushed = flush
-      now = Fluent::Engine.now
       flushed.each do |tag, data|
         Fluent::Engine.emit(tag, now, data)
       end
