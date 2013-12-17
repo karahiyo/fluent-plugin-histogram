@@ -21,13 +21,16 @@ class HistogramOutputTest < Test::Unit::TestCase
     }
   end
 
-  def test_one_increment
+  def test_small_increment
     bin_num = 5
     f = create_driver %[ bin_num #{bin_num}]
     f.instance.increment("test.input", "A")
+    f.instance.increment("test.input", "B")
     zero = f.instance.zero_hist
     zero["A".hash % bin_num] += 1
-    assert_equal({"test.input" => {:data => zero}}, f.instance.flush)
+    zero["B".hash % bin_num] += 1
+    assert_equal({"test.input" => {:data => zero, :sum => 2, :ave => 0.4, :len=>2}}, 
+                 f.instance.flush)
   end
 
   def test_tag_add_remove
@@ -51,18 +54,22 @@ class HistogramOutputTest < Test::Unit::TestCase
       f.instance.increment("test.input", i.to_s)
     end
     flushed = f.instance.flush
-    assert_equal(1000, flushed["test.input"][:data].inject(:+))
+    assert_equal(1000, flushed["test.input"][:sum])
+    assert_equal(1000.to_f / bin_num, flushed["test.input"][:ave])
   end
 
   def test_emit
-    f = create_driver
+    bin_num = 10
+    f = create_driver(%[bin_num #{bin_num}])
     f.run do
       100.times do 
         f.emit({"keys" => ["A", "B", "C"]})
       end
     end
     flushed = f.instance.flush
-    assert_equal(100*3, flushed["test"][:data].inject(:+))
+    assert_equal(100*3, flushed["test"][:sum])
+    assert_equal(100*3.to_f / bin_num, flushed["test"][:ave])
+    assert_equal(3, flushed["test"][:len])
   end
 
 end

@@ -92,8 +92,21 @@ module Fluent
       tagged
     end
 
+    def generate_output(flushed)
+      flushed.each do |tag, hists|
+        hist = hists[:data]
+        act_hist = hist.select {|v| v != 0}
+        len = act_hist.length
+        sum = act_hist.inject(:+)
+        flushed[tag][:sum] = sum
+        flushed[tag][:ave] = sum.to_f / @bin_num
+        flushed[tag][:len] = len
+      end
+      flushed
+    end
+
     def flush
-      flushed, @hists = @hists, initialize_hists(@hists.keys.dup)
+      flushed, @hists = generate_output(@hists), initialize_hists(@hists.keys.dup)
       tagging(flushed)
     end
 
