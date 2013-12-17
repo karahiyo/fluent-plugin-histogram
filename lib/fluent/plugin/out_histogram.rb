@@ -30,7 +30,10 @@ module Fluent
       end
 
       @zero_hist = @bin_num.times.map{0}
+
       @hists = initialize_hists
+      @mutex = Mutex.new
+
     end
 
     def start
@@ -70,9 +73,11 @@ module Fluent
     end
 
     def increment(tag, key)
-      @hists[tag] ||= @zero_hist.dup
-      id = key.hash % @bin_num
-      @hists[tag][id] += 1
+      @mutex.synchronize {
+        @hists[tag] ||= @zero_hist.dup
+        id = key.hash % @bin_num
+        @hists[tag][id] += 1
+      }
     end
 
     def emit(tag, es, chain)

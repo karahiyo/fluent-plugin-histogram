@@ -7,8 +7,8 @@ class HistogramOutputTest < Test::Unit::TestCase
 
   CONFIG = %[
   count_key      keys
-  flush_interval 5s
-  bin_num        5
+  flush_interval 60s
+  bin_num        100
   ]
 
   def create_driver(conf = CONFIG, tag='test')
@@ -22,14 +22,14 @@ class HistogramOutputTest < Test::Unit::TestCase
   end
 
   def test_small_increment
-    bin_num = 5
+    bin_num = 100
     f = create_driver %[ bin_num #{bin_num}]
     f.instance.increment("test.input", "A")
     f.instance.increment("test.input", "B")
     zero = f.instance.zero_hist
     zero["A".hash % bin_num] += 1
     zero["B".hash % bin_num] += 1
-    assert_equal({"test.input" => {:hist => zero, :sum => 2, :ave => 0.4, :len=>2}}, 
+    assert_equal({"test.input" => {:hist => zero, :sum => 2, :ave => 2.0/bin_num, :len=>2}}, 
                  f.instance.flush)
   end
 
@@ -59,7 +59,7 @@ class HistogramOutputTest < Test::Unit::TestCase
   end
 
   def test_emit
-    bin_num = 10
+    bin_num = 100
     f = create_driver(%[bin_num #{bin_num}])
     f.run do
       100.times do 
