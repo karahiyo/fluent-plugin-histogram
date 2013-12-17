@@ -29,13 +29,14 @@ class HistogramOutputTest < Test::Unit::TestCase
   end
 
   def test_increment_sum
-    bin_num = 5
+    bin_num = 100
     f = create_driver %[ bin_num #{bin_num}]
-    100.times do |i|
+    1000.times do |i|
       f.instance.increment("test.input", i.to_s)
     end
     flushed = f.instance.flush
-    assert_equal(100, flushed["test.input"][:data].inject(:+))
+    p flushed
+    assert_equal(1000, flushed["test.input"][:data].inject(:+))
   end
 
 end
