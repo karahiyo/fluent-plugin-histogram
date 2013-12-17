@@ -9,6 +9,10 @@ module Fluent
     config_param :bin_num, :integer, :default => 100
 
     attr_accessor :flush_interval
+    attr_accessor :hists
+    attr_accessor :init_hist
+
+    ## fluentd output plugin's methods
 
     def initialize
       super
@@ -17,13 +21,16 @@ module Fluent
     def configure(conf)
       super
 
-
+      raise Fluent::ConfigError, "bin_num must be > 0" unless @bin_num <= 0
 
       @tag_prefix_string = @tag_prefix + '.' if @tag_prefix
       if @input_tag_remove_prefix
         @remove_prefix_string = @input_tag_remove_prefix + '.'
         @remove_prefix_length = @remove_prefix_string.length
       end
+
+      @init_hist = @bin_num.times.map{0}
+      @hists = initialize_hists
     end
 
     def start
@@ -47,6 +54,19 @@ module Fluent
       super
       @watcher.terminate
       @watcher.join
+    end
+
+
+    ## Histogram plugin's method
+
+    def initialize_hists(tags=nil)
+      if tags
+        tags.each do |tag|
+          hists[tag] = {:data => @init_hist.dup}
+        end
+      else
+        {}
+      end
     end
 
   end
