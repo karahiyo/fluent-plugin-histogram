@@ -1,7 +1,28 @@
 # fluent-plugin-histogram
 
-Fluent plugin to count message keys, 
-and make histogram to help detecting hotspot problem.
+Fluentd output plugin to count message keys, 
+and make histogram to help detecting hotspot problems.
+
+```
+$ echo '{"keys":["A",  "B",  "C",  "A"]}' | fluent-cat test.combine.input
+$ echo '{"keys":["A",  "B",  "D"]}' | fluent-cat test.combine.input
+```
+
+output is
+```
+```
+
+## Configuration
+
+```
+<match test.input.**>
+    type        histogram
+    count_key   keys        # input message tag to be counted
+    flush_interval  10s     # flush interval[s] (:default 60s)
+    tag_prefix  histo
+    input_tag_remove_prefix test.input
+</match>
+```
 
 ## Installation
 
