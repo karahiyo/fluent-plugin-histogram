@@ -37,8 +37,18 @@ class HistogramOutputTest < Test::Unit::TestCase
       f.instance.increment("test.input", i.to_s)
     end
     flushed = f.instance.flush
-    p flushed
     assert_equal(1000, flushed["test.input"][:data].inject(:+))
+  end
+
+  def test_emit
+    f = create_driver
+    f.run do
+      100.times do 
+        f.emit({"keys" => ["A", "B", "C"]})
+      end
+    end
+    flushed = f.instance.flush
+    assert_equal(100*3, flushed["test"][:data].inject(:+))
   end
 
 end
