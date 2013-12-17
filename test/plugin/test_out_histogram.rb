@@ -9,6 +9,8 @@ class HistogramOutputTest < Test::Unit::TestCase
   count_key      keys
   flush_interval 60s
   bin_num        100
+  tag_prefix     histo
+  input_tag_remove_prefix test.input
   ]
 
   def create_driver(conf = CONFIG, tag='test')
