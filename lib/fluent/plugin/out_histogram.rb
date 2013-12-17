@@ -63,16 +63,16 @@ module Fluent
       hists = {}
       if tags
         tags.each do |tag|
-          hists[tag] = {:data => @zero_hist.dup}
+          hists[tag] = @zero_hist.dup
         end
       end
       hists
     end
 
     def increment(tag, key)
-      @hists[tag] ||= {:data => @zero_hist.dup}
-      hashed = key.hash % @bin_num
-      @hists[tag][:data][hashed] += 1
+      @hists[tag] ||= @zero_hist.dup
+      id = key.hash % @bin_num
+      @hists[tag][id] += 1
     end
 
     def emit(tag, es, chain)
@@ -93,16 +93,18 @@ module Fluent
     end
 
     def generate_output(flushed)
-      flushed.each do |tag, hists|
-        hist = hists[:data]
+      output = {}
+      flushed.each do |tag, hist|
+        output[tag] = {}
         act_hist = hist.select {|v| v != 0}
         len = act_hist.length
         sum = act_hist.inject(:+)
-        flushed[tag][:sum] = sum
-        flushed[tag][:ave] = sum.to_f / @bin_num
-        flushed[tag][:len] = len
+        output[tag][:hist] = hist
+        output[tag][:sum] = sum
+        output[tag][:ave] = sum.to_f / @bin_num
+        output[tag][:len] = len
       end
-      flushed
+      output
     end
 
     def flush

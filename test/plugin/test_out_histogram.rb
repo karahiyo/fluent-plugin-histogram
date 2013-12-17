@@ -29,7 +29,7 @@ class HistogramOutputTest < Test::Unit::TestCase
     zero = f.instance.zero_hist
     zero["A".hash % bin_num] += 1
     zero["B".hash % bin_num] += 1
-    assert_equal({"test.input" => {:data => zero, :sum => 2, :ave => 0.4, :len=>2}}, 
+    assert_equal({"test.input" => {:hist => zero, :sum => 2, :ave => 0.4, :len=>2}}, 
                  f.instance.flush)
   end
 
