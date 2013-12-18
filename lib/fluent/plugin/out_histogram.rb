@@ -11,6 +11,7 @@ module Fluent
     attr_accessor :flush_interval
     attr_accessor :hists
     attr_accessor :zero_hist
+    attr_accessor :remove_prefix_string
 
     ## fluentd output plugin's methods
 
@@ -136,9 +137,8 @@ module Fluent
 
     def strip_tag(tag)
       return tag unless @input_tag_remove_prefix
-      return tag[@remove_prefix_length..-1] if tag.start_with? @remove_prefix_string && tag.length > @remove_prefix_length
+      return tag[@remove_prefix_length..-1] if tag.start_with?(@remove_prefix_string) && tag.length > @remove_prefix_length
       return "" if tag == @input_tag_remove_prefix
-      tag
     end
 
   end
