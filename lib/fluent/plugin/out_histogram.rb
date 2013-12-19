@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+require 'fluent/mixin/config_placeholders'
+
 module Fluent
   class HistogramOutput < Fluent::Output
     Fluent::Plugin.register_output('histogram', self)
@@ -8,6 +12,8 @@ module Fluent
     config_param :flush_interval, :time, :default => 60
     config_param :count_key, :string, :default => 'keys'
     config_param :bin_num, :integer, :default => 100
+
+    include Fluent::Mixin::ConfigPlaceholders
 
     attr_accessor :flush_interval
     attr_accessor :hists
