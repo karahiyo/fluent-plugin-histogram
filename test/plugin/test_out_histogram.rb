@@ -101,13 +101,15 @@ class HistogramOutputTest < Test::Unit::TestCase
                         hostname       localhost
                         input_tag_remove_prefix test])
     # ("A".."CV").to_a.size == 100
-    500.times {f.emit({"keys" => ("A".."CV").to_a})}
+    f.run { 500.times {f.emit({"keys" => ("A".."CV").to_a})} }
     flushed_even = f.instance.flush["histo.localhost"]
+    
     #('A'..'ZZ').to_a.shuffle[0..9].size == 10
     # so run emit 5000(10 times of 500)
     data = ('A'..'ZZ').to_a.shuffle[0..9]
-    5000.times { f.emit({"keys" =>  data }) }
+    f.run { 5000.times { f.emit({"keys" =>  data }) } }
     flushed_uneven = f.instance.flush["histo.localhost"]
+   
     assert_equal(true, flushed_even[:sd] < flushed_uneven[:sd])
   end
 
