@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = "fluent-plugin-histogram"
-  spec.version       = "0.0.5"
+  spec.version       = "0.0.6"
   spec.authors       = ["SHIMIZU Yusuke"]
   spec.email         = ["a.ryuklnm@gmail.com"]
   spec.description   = "Combine data and make histogram. This plugin help to detect hotspot problem about target data."
