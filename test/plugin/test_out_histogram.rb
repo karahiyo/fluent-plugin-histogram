@@ -51,11 +51,13 @@ class HistogramOutputTest < Test::Unit::TestCase
 
   def test_tagging
     f = create_driver(%[
+                      hostname localhost
                       tag_prefix histo
-                      input_tag_remove_prefix test])
+                      input_tag_remove_prefix test
+                      tag_suffix __HOSTNAME__ ])
     data = {"test.input" => [1, 2, 3, 4, 5]}
     tagged = f.instance.tagging(data)
-    assert_equal("histo.input", tagged.keys.join(''))
+    assert_equal("histo.input.localhost", tagged.keys.join(''))
   end
 
   def test_tagging_use_tag

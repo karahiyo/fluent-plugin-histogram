@@ -8,6 +8,7 @@ module Fluent
 
     config_param :tag, :string, :default => nil
     config_param :tag_prefix, :string, :default => nil
+    config_param :tag_suffix, :string, :default => nil
     config_param :input_tag_remove_prefix, :string, :default => nil
     config_param :flush_interval, :time, :default => 60
     config_param :count_key, :string, :default => 'keys'
@@ -33,6 +34,7 @@ module Fluent
       $log.warn %Q[too small "bin_num(=#{@bin_num})" may raise unexpected outcome] if @bin_num < 100
 
       @tag_prefix_string = @tag_prefix + '.' if @tag_prefix
+      @tag_suffix_string = '.' + @tag_suffix if @tag_suffix
       if @input_tag_remove_prefix
         @remove_prefix_string = @input_tag_remove_prefix + '.'
         @remove_prefix_length = @remove_prefix_string.length
@@ -113,6 +115,10 @@ module Fluent
           end
           if @tag_prefix 
             tag = @tag_prefix_string << tag
+            tag.gsub!(/^\.|\.$/, "")
+          end
+          if @tag_suffix
+            tag << @tag_suffix_string
             tag.gsub!(/^\.|\.$/, "")
           end
         end
