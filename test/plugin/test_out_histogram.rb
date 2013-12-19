@@ -35,7 +35,7 @@ class HistogramOutputTest < Test::Unit::TestCase
                  f.instance.flush)
   end
 
-  def test_tag_add_remove
+  def test_tagging_with_flush
     f = create_driver(%[tag_prefix histo])
     f.instance.increment("test",  "A")
     flushed = f.instance.flush
@@ -56,6 +56,13 @@ class HistogramOutputTest < Test::Unit::TestCase
     data = {"test.input" => [1, 2, 3, 4, 5]}
     tagged = f.instance.tagging(data)
     assert_equal("histo.input", tagged.keys.join(''))
+  end
+
+  def test_tagging_use_tag
+    f = create_driver(%[ tag histo ])
+    data = {"test.input" => [1, 2, 3, 4, 5]}
+    tagged = f.instance.tagging(data)
+    assert_equal("histo", tagged.keys.join(''))
   end
 
   def test_increment_sum

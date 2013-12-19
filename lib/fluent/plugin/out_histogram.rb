@@ -2,7 +2,7 @@ module Fluent
   class HistogramOutput < Fluent::Output
     Fluent::Plugin.register_output('histogram', self)
 
-    config_param :tag, :string, :default => 'histo'
+    config_param :tag, :string, :default => nil
     config_param :tag_prefix, :string, :default => nil
     config_param :input_tag_remove_prefix, :string, :default => nil
     config_param :flush_interval, :time, :default => 60
@@ -95,16 +95,20 @@ module Fluent
     def tagging(flushed)
       tagged = {}
       tagged = Hash[ flushed.map do |tag, hist|
-        if @input_tag_remove_prefix &&
-          ( ( tag.start_with?(@remove_prefix_string) && 
-             tag.length > @remove_prefix_length ) ||
-             tag == @input_tag_remove_prefix)
-          tag = tag[@input_tag_remove_prefix.length..-1]
-          tag.gsub!(/^\.|\.$/, "")
-        end
-        if @tag_prefix 
-          tag = @tag_prefix_string << tag
-          tag.gsub!(/^\.|\.$/, "")
+        if @tag 
+          tag = @tag
+        else
+          if @input_tag_remove_prefix &&
+            ( ( tag.start_with?(@remove_prefix_string) && 
+               tag.length > @remove_prefix_length ) ||
+               tag == @input_tag_remove_prefix)
+            tag = tag[@input_tag_remove_prefix.length..-1]
+            tag.gsub!(/^\.|\.$/, "")
+          end
+          if @tag_prefix 
+            tag = @tag_prefix_string << tag
+            tag.gsub!(/^\.|\.$/, "")
+          end
         end
 
         [tag, hist]
