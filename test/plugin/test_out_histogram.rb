@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 require 'helper'
 
 class HistogramOutputTest < Test::Unit::TestCase
@@ -55,9 +57,17 @@ class HistogramOutputTest < Test::Unit::TestCase
                       tag_prefix histo
                       input_tag_remove_prefix test
                       tag_suffix __HOSTNAME__ ])
+
+    # input tag is one
     data = {"test.input" => [1, 2, 3, 4, 5]}
     tagged = f.instance.tagging(data)
     assert_equal("histo.input.localhost", tagged.keys.join(''))
+
+    # input tag is more than one
+    data = {"test.a" => [1, 2, 3], "test.b" => [1, 2]}
+    tagged = f.instance.tagging(data)
+    assert_equal(true, tagged.key?("histo.a.localhost"))
+    assert_equal(true, tagged.key?("histo.b.localhost"))
   end
 
   def test_tagging_use_tag
@@ -89,6 +99,22 @@ class HistogramOutputTest < Test::Unit::TestCase
     flushed = f.instance.flush
     assert_equal(100*3, flushed["test"][:sum])
     assert_equal(100*3 / bin_num, flushed["test"][:avg])
+  end
+
+  def test_some_hist_exist_case_tagging_with_emit
+    f = create_driver
+    data = {"keys" => ["A", "B", "C"]}
+    f.run do
+      ["test.a", "test.b", "test.c"].each do |tag|
+        f.instance.increment(tag, data)
+      end
+    end
+
+    f.instance.flush # clear hist
+    flushed = f.instance.flush
+    assert_equal(true, flushed.key?("histo.test.a"))
+    assert_equal(true, flushed.key?("histo.test.b"))
+    assert_equal(true, flushed.key?("histo.test.c"))
   end
 
   def test_histogram_do_really_useful
