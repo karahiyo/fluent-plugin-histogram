@@ -2,6 +2,8 @@
 
 Fluentd output plugin. count up key you specified,
 and make **histogramatic something** to help detecting hotspot problems.
+We used "histogramatic" as our output histogram is not correct count-up result about provided keys.
+This plugin will do good if there are an enormous variety of keys.
 
 ## Examples
 
