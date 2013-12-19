@@ -118,7 +118,7 @@ module Fluent
             tag.gsub!(/^\.|\.$/, "")
           end
           if @tag_suffix
-            tag << @tag_suffix_string
+            tag += @tag_suffix_string
             tag.gsub!(/^\.|\.$/, "")
           end
         end
