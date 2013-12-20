@@ -2,11 +2,14 @@
 
 Fluentd output plugin. 
 
-Count up input keys, and make **histogramatic something** to help detecting hotspot problems.
+Count up input keys, and make **scalable and rough histogram** to help detecting hotspot problems.
 
-We used "histogramatic" as our output histogram is not correct count-up result about provided keys.
+"Scalable rough histogram" fit for cases there are an enormous variety of keys.
 
-This plugin will do good if there are an enormous variety of keys.
+We refered ["Strauss,  O.: Rough histograms for robust statistics, Pattern Recogniti, 2000. Proceedings. 15th International Conference on (Volume:2)"](http://ieeexplore.ieee.org/xpl/mostRecentIssue.jsp?punumber=7237) for "rough histogram". 
+Moreover, we optimize that histogram for enormous variety of keys by fix histogram width.
+
+Be careful, our plugin's output histogram is not correct count-up result about provided keys. But its can handle 25,000 records/sec inputs data, and that outputted histogram is enough to use for detecting hotspot problem.
 
 ## Examples
 
