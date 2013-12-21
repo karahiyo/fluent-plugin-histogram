@@ -25,7 +25,7 @@ class HistogramOutputTest < Test::Unit::TestCase
     }
   end
 
-  def test_small_increment
+  def test_small_increment_no_alpha
     bin_num = 100
     alpha = 1
     f = create_driver(%[ 
@@ -36,13 +36,30 @@ class HistogramOutputTest < Test::Unit::TestCase
     zero = f.instance.zero_hist.dup
     id = "A".hash % bin_num
     zero[id] += 1
-    zero[(id + alpha) % bin_num] += 1
-    zero[id - alpha] += 1
     id = "B".hash % bin_num
     zero[id] += 1
-    zero[(id + alpha) % bin_num] += 1
-    zero[id - alpha] += 1
-    assert_equal({"test.input" => {:hist => zero, :sum => 2*3, :avg => 2*3/bin_num, :sd=>0}}, 
+    assert_equal({"test.input" => {:hist => zero, :sum => 2, :avg => 2/bin_num, :sd=>0}}, 
+                 f.instance.flush)
+  end
+
+  def test_small_increment_with_alpha
+    bin_num = 100
+    alpha = 2
+    f = create_driver(%[ 
+                        bin_num #{bin_num}
+                        alpha #{alpha}])
+    f.instance.increment("test.input", "A")
+    f.instance.increment("test.input", "B")
+    zero = f.instance.zero_hist.dup
+    id = "A".hash % bin_num
+    zero[id] += 2
+    zero[(id + alpha - 1) % bin_num] += 1
+    zero[id - alpha + 1] += 1
+    id = "B".hash % bin_num
+    zero[id] += 2
+    zero[(id + alpha - 1) % bin_num] += 1
+    zero[id - alpha + 1] += 1
+    assert_equal({"test.input" => {:hist => zero, :sum => 2*3+2, :avg => (2*3+2)/bin_num, :sd=>0}}, 
                  f.instance.flush)
   end
 
@@ -93,8 +110,8 @@ class HistogramOutputTest < Test::Unit::TestCase
       f.instance.increment("test.input", i.to_s)
     end
     flushed = f.instance.flush
-    assert_equal(1000*3, flushed["test.input"][:sum])
-    assert_equal(1000*3/bin_num, flushed["test.input"][:avg])
+    assert_equal(1000, flushed["test.input"][:sum])
+    assert_equal(1000/bin_num, flushed["test.input"][:avg])
   end
 
   def test_emit
@@ -106,8 +123,8 @@ class HistogramOutputTest < Test::Unit::TestCase
       end
     end
     flushed = f.instance.flush
-    assert_equal(100*3*3, flushed["test"][:sum])
-    assert_equal(100*3*3/bin_num, flushed["test"][:avg])
+    assert_equal(100*3, flushed["test"][:sum])
+    assert_equal(100*3/bin_num, flushed["test"][:avg])
   end
 
   def test_some_hist_exist_case_tagging_with_emit
