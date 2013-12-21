@@ -13,6 +13,7 @@ module Fluent
     config_param :flush_interval, :time, :default => 60
     config_param :count_key, :string, :default => 'keys'
     config_param :bin_num, :integer, :default => 100
+    config_param :alpha, :integer, :default => 1
 
     include Fluent::Mixin::ConfigPlaceholders
 
@@ -87,7 +88,11 @@ module Fluent
       @mutex.synchronize {
         @hists[tag] ||= @zero_hist.dup
         id = key.hash % @bin_num
-        @hists[tag][id] += 1
+        (1..@alpha).each do |alpha|
+          (-alpha..alpha).each do |a|
+            @hists[tag][(id + a) % @bin_num] += 1
+          end
+        end
       }
     end
 

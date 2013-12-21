@@ -27,13 +27,22 @@ class HistogramOutputTest < Test::Unit::TestCase
 
   def test_small_increment
     bin_num = 100
-    f = create_driver %[ bin_num #{bin_num}]
+    alpha = 1
+    f = create_driver(%[ 
+                        bin_num #{bin_num}
+                        alpha #{alpha}])
     f.instance.increment("test.input", "A")
     f.instance.increment("test.input", "B")
-    zero = f.instance.zero_hist
-    zero["A".hash % bin_num] += 1
-    zero["B".hash % bin_num] += 1
-    assert_equal({"test.input" => {:hist => zero, :sum => 2, :avg => 2/bin_num, :sd=>0}}, 
+    zero = f.instance.zero_hist.dup
+    id = "A".hash % bin_num
+    zero[id] += 1
+    zero[(id + alpha) % bin_num] += 1
+    zero[id - alpha] += 1
+    id = "B".hash % bin_num
+    zero[id] += 1
+    zero[(id + alpha) % bin_num] += 1
+    zero[id - alpha] += 1
+    assert_equal({"test.input" => {:hist => zero, :sum => 2*3, :avg => 2*3/bin_num, :sd=>0}}, 
                  f.instance.flush)
   end
 
@@ -84,8 +93,8 @@ class HistogramOutputTest < Test::Unit::TestCase
       f.instance.increment("test.input", i.to_s)
     end
     flushed = f.instance.flush
-    assert_equal(1000, flushed["test.input"][:sum])
-    assert_equal(1000 / bin_num, flushed["test.input"][:avg])
+    assert_equal(1000*3, flushed["test.input"][:sum])
+    assert_equal(1000*3/bin_num, flushed["test.input"][:avg])
   end
 
   def test_emit
@@ -97,8 +106,8 @@ class HistogramOutputTest < Test::Unit::TestCase
       end
     end
     flushed = f.instance.flush
-    assert_equal(100*3, flushed["test"][:sum])
-    assert_equal(100*3 / bin_num, flushed["test"][:avg])
+    assert_equal(100*3*3, flushed["test"][:sum])
+    assert_equal(100*3*3/bin_num, flushed["test"][:avg])
   end
 
   def test_some_hist_exist_case_tagging_with_emit
@@ -127,13 +136,26 @@ class HistogramOutputTest < Test::Unit::TestCase
                         hostname       localhost
                         input_tag_remove_prefix test])
     # ("A".."CV").to_a.size == 100
-    f.run { 500.times {f.emit({"keys" => ("A".."CV").to_a})} }
+    data = ("A".."ZZ").to_a.shuffle
+    f.run do 
+      100.times do 
+        data.each_slice(10) do |d|
+          f.emit({"keys" => d})
+        end
+      end
+    end
     flushed_even = f.instance.flush["histo.localhost"]
     
     #('A'..'ZZ').to_a.shuffle[0..9].size == 10
     # so run emit 5000(10 times of 500)
-    data = ('A'..'ZZ').to_a.shuffle[0..9]
-    f.run { 5000.times { f.emit({"keys" =>  data }) } }
+    data.size.times {|i| data[i] = 'D' if i%100 == 0 }
+    f.run do 
+      100.times do 
+        data.each_slice(10) do |d|
+          f.emit({"keys" =>  d})
+        end
+      end
+    end
     flushed_uneven = f.instance.flush["histo.localhost"]
    
     assert_equal(true, flushed_even[:sd] < flushed_uneven[:sd])
