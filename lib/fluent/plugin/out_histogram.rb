@@ -88,8 +88,8 @@ module Fluent
       @mutex.synchronize {
         @hists[tag] ||= @zero_hist.dup
         id = key.hash % @bin_num
-        (1..@alpha).each do |alpha|
-          (-alpha+1..alpha-1).each do |a|
+        (0..@alpha).each do |alpha|
+          (-alpha..alpha).each do |a|
             @hists[tag][(id + a) % @bin_num] += 1
           end
         end
