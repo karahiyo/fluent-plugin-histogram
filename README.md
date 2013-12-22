@@ -7,8 +7,8 @@ Count up input keys, and make **scalable and rough histogram** to help detecting
 "Scalable rough histogram" fit for cases there are an enormous variety of keys.
 
 We refered ["Strauss,  O.: Rough histograms for robust statistics, Pattern Recogniti, 2000. Proceedings. 15th International Conference on (Volume:2)"](http://ieeexplore.ieee.org/xpl/mostRecentIssue.jsp?punumber=7237) for "rough histogram". 
-In this approarch, a increment unit is not one value(`.`), increment field  `△ `.
-For use this, please set `alpha > 1`(default 1) in fluent.conf.
+In this approarch, a increment unit is not one value(`.`), increment some values like this shape `△ `.
+For use this, please set `alpha >= 1`(default 1) in fluent.conf.
 
 Moreover, we optimize that histogram for enormous variety of keys by fix histogram width.
 For this, please set `bin_width`(default 100) in fluent.conf. 
