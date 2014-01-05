@@ -7,8 +7,8 @@ Gem::Specification.new do |spec|
   spec.version       = "0.0.12"
   spec.authors       = ["SHIMIZU Yusuke"]
   spec.email         = ["a.ryuklnm@gmail.com"]
-  spec.description   = "Combine data and make histogram. This plugin help to detect hotspot problem about target data."
-  spec.summary       = "Make histogram plugin"
+  spec.description   = "Combine inputs data and make histogram which help to detect a hotspot."
+  spec.summary       = "Combine inputs data and make histogram which help to detect a hotspot."
   spec.homepage      = "https://github.com/karahiyo/fluent-plugin-histogram"
   spec.license       = "APLv2"
 
