@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.name          = "fluent-plugin-histogram"
   spec.version       = "0.0.12"
   spec.authors       = ["SHIMIZU Yusuke"]
-  spec.email         = ["a.ryuklnm@gmail.com"]
+  spec.email         = "a.ryuklnm@gmail.com"
   spec.description   = "Combine inputs data and make histogram which help to detect a hotspot."
   spec.summary       = "Combine inputs data and make histogram which help to detect a hotspot."
   spec.homepage      = "https://github.com/karahiyo/fluent-plugin-histogram"
@@ -20,9 +20,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_development_dependency "bundler", "~> 1.3"
-  spec.add_development_dependency "rake"
-  spec.add_development_dependency "fluentd"
-  spec.add_runtime_dependency "fluent-mixin-config-placeholders"
+  spec.add_development_dependency "rake", ">= 0.9.2"
+  spec.add_development_dependency "fluentd", "~> 0.10.9"
+  spec.add_runtime_dependency "fluent-mixin-config-placeholders", "~> 0.2.3"
 
-  spec.add_runtime_dependency "fluentd"
 end
