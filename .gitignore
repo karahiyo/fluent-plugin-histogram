@@ -19,3 +19,4 @@ tmp
 .conf
 .idea
 vendor
+.ruby-version
