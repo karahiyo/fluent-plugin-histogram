@@ -147,7 +147,7 @@ class HistogramOutputTest < Test::Unit::TestCase
     assert_equal(true, flushed.key?("histo.test.c"))
   end
 
-  def test_histogram_do_really_useful
+  def test_can_detect_hotspot
     f = create_driver(%[
                         count_key      keys
                         flush_interval 10s
@@ -156,7 +156,7 @@ class HistogramOutputTest < Test::Unit::TestCase
                         tag_suffix     __HOSTNAME__
                         hostname       localhost
                         input_tag_remove_prefix test])
-    # ("A".."CV").to_a.size == 100
+    # ("A".."ZZ").to_a.size == 702
     data = ("A".."ZZ").to_a.shuffle
     f.run do 
       100.times do 
@@ -167,8 +167,8 @@ class HistogramOutputTest < Test::Unit::TestCase
     end
     flushed_even = f.instance.flush["histo.localhost"]
     
-    #('A'..'ZZ').to_a.shuffle[0..9].size == 10
-    # so run emit 5000(10 times of 500)
+    #('A'..'ZZ').to_a.shuffle.size == 702
+    # In here, replace 7 values of ('A'..'ZZ') to 'D' as example hotspot.
     data.size.times {|i| data[i] = 'D' if i%100 == 0 }
     f.run do 
       100.times do 
