@@ -8,12 +8,12 @@ Count up input keys, and make **scalable and rough histogram** to help detecting
 
 We refered ["Strauss,  O.: Rough histograms for robust statistics, Pattern Recogniti, 2000. Proceedings. 15th International Conference on (Volume:2)"](http://ieeexplore.ieee.org/xpl/mostRecentIssue.jsp?punumber=7237) for "rough histogram". 
 In this approarch, a increment unit is not one value(`.`), increment some values like this shape `△ `.
-For use this, please set `alpha >= 1`(default 1) in fluent.conf.
+To use this, please set `alpha >= 1`(default 1) option in fluent.conf.
 
-Moreover, we optimize that histogram for enormous variety of keys by fix histogram width.
-For this, please set `bin_width`(default 100) in fluent.conf. 
+Moreover, we optimized that histogram for enormous variety of keys by fix histogram width.
+To use this, please set `bin_width`(default 100) in fluent.conf. 
 
-Be careful, our plugin's output histogram is not correct count-up result about provided keys. But its can handle 25,000 records/sec inputs data, and that outputted histogram is enough to use for detecting hotspot problem.
+Be careful, our plugin's output histogram is not correct count-up result about provided data. But this plugin can handle 25,000 records/sec inputs data, and that outputted histogram is enough to use for detecting hotspot problem.
 
 ## Examples
 
