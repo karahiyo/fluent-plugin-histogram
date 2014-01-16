@@ -3,10 +3,10 @@
 Gem::Specification.new do |gem|
   gem.name          = "fluent-plugin-histogram"
   gem.version       = "0.1.0"
-  gem.authors       = ["YUSUKE Shimizu"]
+  gem.authors       = ["Yusuke SHIMIZU"]
   gem.email         = "a.ryuklnm@gmail.com"
-  gem.description   = "Combine inputs data and make histogram which help to detect a hotspot."
-  gem.summary       = "Combine inputs data and make histogram which help to detect a hotspot."
+  gem.description   = "Combine inputs data and make histogram which helps to detect a hotspot."
+  gem.summary       = "Combine inputs data and make histogram which helps to detect a hotspot."
   gem.homepage      = "https://github.com/karahiyo/fluent-plugin-histogram"
   gem.license       = "APLv2"
 
