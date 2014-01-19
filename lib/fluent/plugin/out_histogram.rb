@@ -85,12 +85,12 @@ module Fluent
     end
 
     def increment(tag, key)
+      @hists[tag] ||= @zero_hist.dup
+      id = key.hash % @bin_num
       @mutex.synchronize {
-        @hists[tag] ||= @zero_hist.dup
-        id = key.hash % @bin_num
         (0..@alpha).each do |alpha|
           (-alpha..alpha).each do |a|
-            @hists[tag][(id + a) % @bin_num] += 1
+            @hists[tag][(id + a) % @bin_num] += 1 * @sampling_rate
           end
         end
       }
@@ -138,14 +138,14 @@ module Fluent
       flushed.each do |tag, hist|
         output[tag] = {}
         sum = hist.inject(:+)
-        avg = sum.to_f / hist.size
+        avg = sum / hist.size
         sd = hist.instance_eval do
           sigmas = map { |n| (avg - n)**2 }
           Math.sqrt(sigmas.inject(:+) / size)
         end
         output[tag][:hist] = hist
         output[tag][:sum] = sum
-        output[tag][:avg] = avg.to_i
+        output[tag][:avg] = avg
         output[tag][:sd] = sd.to_i
       end
       output
