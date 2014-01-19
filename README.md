@@ -11,7 +11,7 @@ In this approarch, a increment unit is not one value(`.`), increment some values
 To use this, please set `alpha >= 1`(default 1) option in fluent.conf.
 
 Moreover, we optimized that histogram for enormous variety of keys by fix histogram width.
-To use this, please set `bin_width`(default 100) in fluent.conf. 
+To use this, please set `bin_num`(default 100) in fluent.conf. 
 
 Be careful, our plugin's output histogram is not correct count-up result about provided data. But this plugin can handle 25,000 records/sec inputs data, and that outputted histogram is enough to use for detecting hotspot problem.
 
