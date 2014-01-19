@@ -59,7 +59,7 @@ module Fluent
         sleep 0.5
         if Fluent::Engine.now - @last_checked >= @flush_interval
           now = Fluent::Engine.now
-          flush_emit(now)
+          flush_emit(now - @last_checked)
           @last_checked = now
         end
       end
