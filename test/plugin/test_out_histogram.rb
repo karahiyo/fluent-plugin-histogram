@@ -182,4 +182,21 @@ class HistogramOutputTest < Test::Unit::TestCase
     assert_equal(true, flushed_even[:sd] < flushed_uneven[:sd])
   end
 
+  def test_sampling
+    bin_num = 100
+    sampling_rate = 10
+    f = create_driver(%[ 
+                      bin_num #{bin_num}
+                      sampling_rate #{sampling_rate}
+                      alpha 0 ])
+    f.run do
+      100.times do 
+        f.emit({"keys" => ["A", "B", "C"]})
+      end
+    end
+    flushed = f.instance.flush
+    assert_equal(300, flushed["test"][:sum])
+    assert_equal(300/bin_num, flushed["test"][:avg])
+  end
+
 end

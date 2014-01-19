@@ -14,6 +14,7 @@ module Fluent
     config_param :count_key, :string, :default => 'keys'
     config_param :bin_num, :integer, :default => 100
     config_param :alpha, :integer, :default => 1
+    config_param :sampling_rate, :integer, :default => 1
 
     include Fluent::Mixin::ConfigPlaceholders
 
@@ -44,6 +45,7 @@ module Fluent
       @zero_hist = [0] * @bin_num
 
       @hists = initialize_hists
+      @sampling_counter = 0
       @mutex = Mutex.new
 
     end
@@ -100,8 +102,18 @@ module Fluent
       chain.next
 
       es.each do |time, record|
-         keys = record[@count_key]
-         [keys].flatten.each {|k| increment(tag, k)}
+        keys = record[@count_key]
+        [keys].flatten.each do |k| 
+          if @sampling_rate == 1
+            increment(tag, k)
+          else
+            @sampling_counter += 1
+            if @sampling_counter >= @sampling_rate 
+              increment(tag, k) 
+              @sampling_counter = 0
+            end
+          end
+        end
       end
     end
     
