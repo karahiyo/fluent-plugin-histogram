@@ -65,7 +65,13 @@ output is,
     tag_prefix      histo
     tag_suffix      __HOSTNAME__    # this plugin mixined fluent-mixin-config-placeholders
     input_tag_remove_prefix input
-    alpha           2
+    alpha           1               # count up like this,  (■ = +1)
+                                    #                             ■    
+                                    #                  ■        ■ ■ ■
+                                    #          ■     ■ ■ ■    ■ ■ ■ ■ ■
+                                    # alpha:   0,      1,         2
+
+    sampling_rate   10              # input datas be thin outed to 1/10.
 </match>
 ```
 
