@@ -46,6 +46,8 @@ module Fluent
 
       @hists = initialize_hists
       @sampling_counter = 0
+      @tick = @sampling_rate.to_i > 1 ? @sampling_rate : 1
+
       @mutex = Mutex.new
 
     end
@@ -92,7 +94,7 @@ module Fluent
       @mutex.synchronize {
         (0..@alpha).each do |alpha|
           (-alpha..alpha).each do |a|
-            @hists[tag][(id + a) % @bin_num] += 1 * @sampling_rate
+            @hists[tag][(id + a) % @bin_num] += @tick
           end
         end
       }
