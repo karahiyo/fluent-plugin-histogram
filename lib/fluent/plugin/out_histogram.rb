@@ -32,7 +32,7 @@ module Fluent
     def configure(conf)
       super
 
-      raise Fluent::ConfigError, "bin_num must be > 0" if @bin_num <= 0
+      raise Fluent::ConfigError, 'bin_num must be > 0' if @bin_num <= 0
       $log.warn %Q[too small "bin_num(=#{@bin_num})" may raise unexpected outcome] if @bin_num < 100
 
       @tag_prefix_string = @tag_prefix + '.' if @tag_prefix
@@ -128,15 +128,15 @@ module Fluent
                tag.length > @remove_prefix_length ) ||
                tag == @input_tag_remove_prefix)
             tag = tag[@input_tag_remove_prefix.length..-1]
-            tag.gsub!(/^\.|\.$/, "")
+            tag.gsub!(/^\.|\.$/, '')
           end
           if @tag_prefix 
             tag = @tag_prefix_string + tag
-            tag.gsub!(/^\.|\.$/, "")
+            tag.gsub!(/^\.|\.$/, '')
           end
           if @tag_suffix
             tag += @tag_suffix_string
-            tag.gsub!(/^\.|\.$/, "")
+            tag.gsub!(/^\.|\.$/, '')
           end
         end
 
