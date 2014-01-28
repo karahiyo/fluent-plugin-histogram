@@ -165,7 +165,7 @@ class HistogramOutputTest < Test::Unit::TestCase
         end
       end
     end
-    flushed_even = f.instance.flush["histo.localhost"]
+    flushed_even = f.instance.flush
     
     #('A'..'ZZ').to_a.shuffle.size == 702
     # In here, replace 7 values of ('A'..'ZZ') to 'D' as example hotspot.
@@ -177,9 +177,9 @@ class HistogramOutputTest < Test::Unit::TestCase
         end
       end
     end
-    flushed_uneven = f.instance.flush["histo.localhost"]
-   
-    assert_equal(true, flushed_even[:sd] < flushed_uneven[:sd])
+    flushed_bias = f.instance.flush
+
+    assert_equal(true, flushed_even["histo.localhost"][:sd] < flushed_bias["histo.localhost"][:sd])
   end
 
   def test_sampling

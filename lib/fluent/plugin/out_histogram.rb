@@ -93,8 +93,8 @@ module Fluent
       id = key.hash % @bin_num
       @mutex.synchronize {
         (0..@alpha).each do |alpha|
-          (-alpha..alpha).each do |a|
-            @hists[tag][(id + a) % @bin_num] += @tick
+          (-alpha..alpha).each do |al|
+            @hists[tag][(id + al) % @bin_num] += @tick
           end
         end
       }
@@ -122,27 +122,25 @@ module Fluent
     def tagging(flushed)
       tagged = {}
       tagged = Hash[ flushed.map do |tag, hist|
+        tagged_tag = tag
         if @tag 
-          tag = @tag
+          tagged_tag = @tag
         else
           if @input_tag_remove_prefix &&
             ( ( tag.start_with?(@remove_prefix_string) && 
                tag.length > @remove_prefix_length ) ||
                tag == @input_tag_remove_prefix)
-            tag = tag[@input_tag_remove_prefix.length..-1]
-            tag.gsub!(/^\.|\.$/, '')
+            tagged_tag = tagged_tag[@input_tag_remove_prefix.length..-1]
           end
-          if @tag_prefix 
-            tag = @tag_prefix_string + tag
-            tag.gsub!(/^\.|\.$/, '')
-          end
-          if @tag_suffix
-            tag += @tag_suffix_string
-            tag.gsub!(/^\.|\.$/, '')
-          end
+          
+          tagged_tag = @tag_prefix_string + tagged_tag if @tag_prefix
+          tagged_tag = tagged_tag + @tag_suffix_string if @tag_suffix
+
+          tagged_tag = tagged_tag.gsub(/(^\.)|(\.+$)/, '')
+          tagged_tag = tagged_tag.gsub(/(\.\.+)/, '.')
         end
 
-        [tag, hist]
+        [tagged_tag, hist]
       end ]
       tagged
     end
