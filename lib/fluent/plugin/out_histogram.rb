@@ -14,7 +14,8 @@ module Fluent
     config_param :count_key, :string, :default => 'keys'
     config_param :bin_num, :integer, :default => 100
     config_param :alpha, :integer, :default => 1
-    config_param :sampling_rate, :integer, :default => 1
+    config_param :sampling, :bool, :default => false
+    config_param :sampling_rate, :integer, :default => 10
 
     include Fluent::Mixin::ConfigPlaceholders
 
@@ -33,7 +34,13 @@ module Fluent
       super
 
       raise Fluent::ConfigError, 'bin_num must be > 0' if @bin_num <= 0
+      raise Fluent::ConfigError, 'sampling_rate must be >= 1' if @sampling_rate < 1
       $log.warn %Q[too small "bin_num(=#{@bin_num})" may raise unexpected outcome] if @bin_num < 100
+      if (!!conf['sampling_rate'] && !conf['sampling'])
+        $log.warn %Q[please set `sampling`. To enable sampling_rate you specified, we arbitrarily set `sampling` true.] 
+        @sampling = true
+      end
+      $log.warn %Q[please set `sampling_rate`. temporary setted it default value(10)] if (!conf['sampling_rate'] && conf['sampling'])
 
       @tag_prefix_string = @tag_prefix + '.' if @tag_prefix
       @tag_suffix_string = '.' + @tag_suffix if @tag_suffix
@@ -46,7 +53,7 @@ module Fluent
 
       @hists = initialize_hists
       @sampling_counter = 0
-      @tick = @sampling_rate.to_i > 1 ? @sampling_rate : 1
+      @tick = @sampling ? @sampling_rate.to_i : 1
 
       @mutex = Mutex.new
 
@@ -106,7 +113,7 @@ module Fluent
       es.each do |time, record|
         keys = record[@count_key]
         [keys].flatten.each do |k| 
-          if @sampling_rate == 1
+          if !@sampling
             increment(tag, k)
           else
             @sampling_counter += 1

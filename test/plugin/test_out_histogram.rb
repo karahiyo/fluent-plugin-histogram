@@ -23,6 +23,9 @@ class HistogramOutputTest < Test::Unit::TestCase
     assert_raise(Fluent::ConfigError) {
       create_driver %[ bin_num 0]
     }
+    assert_raise(Fluent::ConfigError) {
+      create_driver %[ sampling_rate -1 ]
+    }
   end
 
   def test_small_increment_no_alpha
@@ -155,6 +158,7 @@ class HistogramOutputTest < Test::Unit::TestCase
                         tag_prefix     histo
                         tag_suffix     __HOSTNAME__
                         hostname       localhost
+                        alpha          1
                         input_tag_remove_prefix test])
     # ("A".."ZZ").to_a.size == 702
     data = ("A".."ZZ").to_a.shuffle
@@ -179,24 +183,44 @@ class HistogramOutputTest < Test::Unit::TestCase
     end
     flushed_bias = f.instance.flush
 
-    assert_equal(true, flushed_even["histo.localhost"][:sd] < flushed_bias["histo.localhost"][:sd])
+    assert_equal(true, flushed_even["histo.localhost"][:sd] < flushed_bias["histo.localhost"][:sd], 
+                 "expected 
+even:#{flushed_even["histo.localhost"]} 
+ <
+bias:#{flushed_bias["histo.localhost"]}")
   end
 
   def test_sampling
     bin_num = 100
     sampling_rate = 10
     f = create_driver(%[ 
-                      bin_num #{bin_num}
+                      bin_num       #{bin_num}
+                      sampling      true
                       sampling_rate #{sampling_rate}
                       alpha 0 ])
+    f.run do
+      sampling_rate.times do 
+        f.emit({"keys" => ["A"]})
+      end
+    end
+    flushed = f.instance.flush
+    assert_equal(sampling_rate, flushed["test"][:sum])
+ 
+    f.run do
+      1.times do  # 1 < sampling_rate
+        f.emit({"keys" => ["A"]})
+      end
+    end
+    flushed = f.instance.flush
+    assert_equal(0, flushed["test"][:sum])
+
     f.run do
       100.times do 
         f.emit({"keys" => ["A", "B", "C"]})
       end
     end
     flushed = f.instance.flush
-    assert_equal(300, flushed["test"][:sum])
-    assert_equal(300/bin_num, flushed["test"][:avg])
+    assert_equal(100*3, flushed["test"][:sum])
   end
 
 end
