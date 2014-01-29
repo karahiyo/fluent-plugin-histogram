@@ -14,7 +14,6 @@ module Fluent
     config_param :count_key, :string, :default => 'keys'
     config_param :bin_num, :integer, :default => 100
     config_param :alpha, :integer, :default => 1
-    config_param :sampling, :bool, :default => false
     config_param :sampling_rate, :integer, :default => 10
 
     include Fluent::Mixin::ConfigPlaceholders
@@ -36,11 +35,7 @@ module Fluent
       raise Fluent::ConfigError, 'bin_num must be > 0' if @bin_num <= 0
       raise Fluent::ConfigError, 'sampling_rate must be >= 1' if @sampling_rate < 1
       $log.warn %Q[too small "bin_num(=#{@bin_num})" may raise unexpected outcome] if @bin_num < 100
-      if (!!conf['sampling_rate'] && !conf['sampling'])
-        $log.warn %Q[please set `sampling`. To enable sampling_rate you specified, we arbitrarily set `sampling` true.] 
-        @sampling = true
-      end
-      $log.warn %Q[please set `sampling_rate`. temporary setted it default value(10)] if (!conf['sampling_rate'] && conf['sampling'])
+      @sampling = true if !!conf['sampling_rate']
 
       @tag_prefix_string = @tag_prefix + '.' if @tag_prefix
       @tag_suffix_string = '.' + @tag_suffix if @tag_suffix
@@ -143,7 +138,7 @@ module Fluent
           tagged_tag = @tag_prefix_string + tagged_tag if @tag_prefix
           tagged_tag << @tag_suffix_string if @tag_suffix
 
-          tagged_tag.gsub!(/(^\.)|(\.+$)/, '')
+          tagged_tag.gsub!(/(^\.+)|(\.+$)/, '')
           tagged_tag.gsub!(/(\.\.+)/, '.')
         end
 

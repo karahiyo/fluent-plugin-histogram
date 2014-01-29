@@ -195,7 +195,6 @@ bias:#{flushed_bias["histo.localhost"]}")
     sampling_rate = 10
     f = create_driver(%[ 
                       bin_num       #{bin_num}
-                      sampling      true
                       sampling_rate #{sampling_rate}
                       alpha 0 ])
     f.run do
