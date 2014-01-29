@@ -122,7 +122,7 @@ module Fluent
     def tagging(flushed)
       tagged = {}
       tagged = Hash[ flushed.map do |tag, hist|
-        tagged_tag = tag
+        tagged_tag = tag.dup
         if @tag 
           tagged_tag = @tag
         else
@@ -134,10 +134,10 @@ module Fluent
           end
           
           tagged_tag = @tag_prefix_string + tagged_tag if @tag_prefix
-          tagged_tag = tagged_tag + @tag_suffix_string if @tag_suffix
+          tagged_tag << @tag_suffix_string if @tag_suffix
 
-          tagged_tag = tagged_tag.gsub(/(^\.)|(\.+$)/, '')
-          tagged_tag = tagged_tag.gsub(/(\.\.+)/, '.')
+          tagged_tag.gsub!(/(^\.)|(\.+$)/, '')
+          tagged_tag.gsub!(/(\.\.+)/, '.')
         end
 
         [tagged_tag, hist]
