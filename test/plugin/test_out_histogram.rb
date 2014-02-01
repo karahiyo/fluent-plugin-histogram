@@ -33,13 +33,16 @@ class HistogramOutputTest < Test::Unit::TestCase
     alpha = 0
     f = create_driver(%[
                         bin_num #{bin_num}
-                        alpha #{alpha}])
-    f.instance.increment("test.input", "A")
-    f.instance.increment("test.input", "B")
+                        alpha #{alpha}],
+                      "test.input")
+    f.run do
+      f.emit({"keys" => "input key"})
+      f.emit({"keys" => "another key"})
+    end
     hist = f.instance.zero_hist.dup
-    id = "A".hash % bin_num
+    id = "input key"[0..9].codepoints.collect{|cp| cp}.join().to_i % bin_num
     hist[id] += 1
-    id = "B".hash % bin_num
+    id = "another key"[0..9].codepoints.collect{|cp| cp}.join().to_i % bin_num
     hist[id] += 1
     assert_equal({"test.input" => {:hist => hist, :sum => 2, :avg => 2/bin_num, :sd=>0}},
                  f.instance.flush)
@@ -50,15 +53,18 @@ class HistogramOutputTest < Test::Unit::TestCase
     alpha = 1
     f = create_driver(%[
                         bin_num #{bin_num}
-                        alpha #{alpha}])
-    f.instance.increment("test.input", "A")
-    f.instance.increment("test.input", "B")
+                        alpha #{alpha}],
+                     "test.input")
+    f.run do
+      f.emit({"keys" => "A"})
+      f.emit({"keys" => "B"})
+    end
     hist = f.instance.zero_hist.dup
-    id = "A".hash % bin_num
+    id = "A".ord % bin_num
     hist[id] += 2
     hist[(id + alpha) % bin_num] += 1
     hist[id - alpha] += 1
-    id = "B".hash % bin_num
+    id = "B".ord % bin_num
     hist[id] += 2
     hist[(id + alpha) % bin_num] += 1
     hist[id - alpha] += 1
@@ -136,7 +142,7 @@ class HistogramOutputTest < Test::Unit::TestCase
 
   def test_some_hist_exist_case_tagging_with_emit
     f = create_driver
-    data = {"keys" => ["A", "B", "C"]}
+    data = "A"
     f.run do
       ["test.a", "test.b", "test.c"].each do |tag|
         f.instance.increment(tag, data)
