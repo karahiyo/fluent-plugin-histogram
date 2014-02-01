@@ -154,7 +154,7 @@ class HistogramOutputTest < Test::Unit::TestCase
     f = create_driver(%[
                         count_key      keys
                         flush_interval 10s
-                        bin_num        100
+                        bin_num        #{2**10}
                         tag_prefix     histo
                         tag_suffix     __HOSTNAME__
                         hostname       localhost
