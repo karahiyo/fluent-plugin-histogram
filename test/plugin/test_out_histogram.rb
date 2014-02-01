@@ -38,18 +38,32 @@ class HistogramOutputTest < Test::Unit::TestCase
     f.run do
       f.emit({"keys" => "input key"})
       f.emit({"keys" => "another key"})
+      f.emit({"keys" => 12})
+      f.emit({"keys" => ["1", "2", "3"]})
     end
     hist = f.instance.zero_hist.dup
     id = "input key"[0..9].codepoints.collect{|cp| cp}.join().to_i % bin_num
     hist[id] += 1
     id = "another key"[0..9].codepoints.collect{|cp| cp}.join().to_i % bin_num
     hist[id] += 1
-    assert_equal({"test.input" => {:hist => hist, :sum => 2, :avg => 2/bin_num, :sd=>0}},
+    id = 12.to_s.codepoints.collect{|cp| cp}.join().to_i % bin_num
+    hist[id] += 1
+    ["1", "2", "3"].each do |k|
+      id = k.ord % bin_num
+      hist[id] += 1
+    end
+
+    sd = hist.instance_eval do
+      avg = inject(:+) / size
+      sigmas = map { |n| (avg - n)**2 }
+      Math.sqrt(sigmas.inject(:+) / size)
+    end
+    assert_equal({"test.input" => {:hist => hist, :sum => 6, :avg => 6/bin_num, :sd=>sd.to_i}},
                  f.instance.flush)
   end
 
   def test_small_increment_with_alpha
-    bin_num = 100
+    bin_num = 10
     alpha = 1
     f = create_driver(%[
                         bin_num #{bin_num}
@@ -58,17 +72,38 @@ class HistogramOutputTest < Test::Unit::TestCase
     f.run do
       f.emit({"keys" => "A"})
       f.emit({"keys" => "B"})
+      f.emit({"keys" => 12})
+      f.emit({"keys" => ["1", "2", "3"]})
     end
     hist = f.instance.zero_hist.dup
     id = "A".ord % bin_num
     hist[id] += 2
     hist[(id + alpha) % bin_num] += 1
-    hist[id - alpha] += 1
+    hist[(id - alpha) % bin_num] += 1
+
     id = "B".ord % bin_num
     hist[id] += 2
     hist[(id + alpha) % bin_num] += 1
-    hist[id - alpha] += 1
-    assert_equal({"test.input" => {:hist => hist, :sum => 2, :avg => 2/bin_num, :sd=>0}},
+    hist[(id - alpha) % bin_num] += 1
+
+    id = 12.to_s.codepoints.collect{|cp| cp}.join().to_i % bin_num
+    hist[id] += 2
+    hist[(id + alpha) % bin_num] += 1
+    hist[(id - alpha) % bin_num] += 1
+
+    ["1", "2", "3"].each do |k|
+      id = k.ord % bin_num
+      hist[id] += 2
+      hist[(id + alpha) % bin_num] += 1
+      hist[(id - alpha) % bin_num] += 1
+    end
+
+    sd = hist.instance_eval do
+      avg = inject(:+) / size
+      sigmas = map { |n| (avg - n)**2 }
+      Math.sqrt(sigmas.inject(:+) / size)
+    end
+    assert_equal({"test.input" => {:hist => hist, :sum => 6, :avg => 6/bin_num, :sd=>sd.to_i}},
                  f.instance.flush)
   end
 

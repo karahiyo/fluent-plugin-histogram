@@ -102,7 +102,7 @@ module Fluent
       @hists[tag] ||= @zero_hist.dup
 
       # id = key.hash % @bin_num
-      id = key[0..9].codepoints.collect{|cp| cp}.join().to_i % @bin_num # attention to long key(length > 10)
+      id = key.to_s[0..9].codepoints.collect{|cp| cp}.join().to_i % @bin_num # attention to long key(length > 10)
       @mutex.synchronize {
         (0..@alpha).each do |alpha|
           (-alpha..alpha).each do |al|
