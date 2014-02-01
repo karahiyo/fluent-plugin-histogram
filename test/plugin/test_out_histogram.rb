@@ -222,4 +222,16 @@ bias:#{flushed_bias["histo.localhost"]}")
     assert_equal(100*3, flushed["test"][:sum])
   end
 
+  def test_revalue
+    f = create_driver(%[
+                      alpha 1
+                      disable_revalue true])
+    f.run do
+      100.times do  # 1 < sampling_rate
+        f.emit({"keys" => ["A"]})
+      end
+    end
+    flushed = f.instance.flush
+    assert_equal(100*4, flushed["test"][:sum])
+  end
 end

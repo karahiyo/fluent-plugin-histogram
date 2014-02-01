@@ -13,8 +13,9 @@ module Fluent
     config_param :flush_interval, :time, :default => 60
     config_param :count_key, :string, :default => 'keys'
     config_param :bin_num, :integer, :default => 100
-    config_param :alpha, :integer, :default => 1
+    config_param :alpha, :integer, :default => 0
     config_param :sampling_rate, :integer, :default => 10
+    config_param :disable_revalue, :bool, :default => false
 
     include Fluent::Mixin::ConfigPlaceholders
 
@@ -49,6 +50,12 @@ module Fluent
       @hists = initialize_hists
       @sampling_counter = 0
       @tick = @sampling ? @sampling_rate.to_i : 1
+
+      if @alpha > 0
+        @revalue = (@alpha+1)**2 if @alpha != 0
+      else
+        @disable_revalue = true
+      end
 
       @mutex = Mutex.new
 
@@ -158,8 +165,8 @@ module Fluent
           Math.sqrt(sigmas.inject(:+) / size)
         end
         output[tag][:hist] = hist
-        output[tag][:sum] = sum
-        output[tag][:avg] = avg
+        output[tag][:sum] = @disable_revalue ? sum : sum / @revalue
+        output[tag][:avg] = @disable_revalue ? avg : avg / @revalue
         output[tag][:sd] = sd.to_i
       end
       output
