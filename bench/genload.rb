@@ -80,8 +80,8 @@ require 'socket'
 require 'msgpack'
 require 'benchmark'
 
-def gen_word(len=nil)
-  len = rand(5) + 1 unless len
+def gen_word(max_len=5)
+  len = rand(max_len) + 1
   rand(36**len).to_s(36)
 end
 
