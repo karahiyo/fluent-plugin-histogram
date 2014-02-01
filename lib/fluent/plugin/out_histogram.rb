@@ -9,6 +9,7 @@ module Fluent
     config_param :tag, :string, :default => nil
     config_param :tag_prefix, :string, :default => nil
     config_param :tag_suffix, :string, :default => nil
+    config_param :out_include_hist, :bool, :default => true
     config_param :input_tag_remove_prefix, :string, :default => nil
     config_param :flush_interval, :time, :default => 60
     config_param :count_key, :string, :default => 'keys'
@@ -164,7 +165,7 @@ module Fluent
           sigmas = map { |n| (avg - n)**2 }
           Math.sqrt(sigmas.inject(:+) / size)
         end
-        output[tag][:hist] = hist
+        output[tag][:hist] = hist if @out_include_hist
         output[tag][:sum] = @disable_revalue ? sum : sum / @revalue
         output[tag][:avg] = @disable_revalue ? avg : avg / @revalue
         output[tag][:sd] = sd.to_i

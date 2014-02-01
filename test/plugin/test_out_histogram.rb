@@ -234,4 +234,13 @@ bias:#{flushed_bias["histo.localhost"]}")
     flushed = f.instance.flush
     assert_equal(100*4, flushed["test"][:sum])
   end
+
+  def test_not_include_hist
+    f = create_driver(%[out_include_hist false])
+    f.run do
+      f.emit({"keys" => ["A"]})
+    end
+    flushed = f.instance.flush
+    assert_equal(false, flushed["test"].has_key?("hist"))
+  end
 end
