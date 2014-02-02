@@ -21,15 +21,19 @@ Be careful, our plugin's output histogram is not correct count-up results about 
 
 if run below commands,
 ```
-$ echo '{"keys":["A",  "B",  "C",  "A"]}' | fluent-cat input.sample
-$ echo '{"keys":["A",  "B",  "D"]}' | fluent-cat input.sample
+$ echo '{"keys":"a key"}' | fluent-cat input.sample
+$ echo '{"keys":["one",  "two",  "takusan",  "takusan", "takusan", "takusan"]}' | fluent-cat input.sample
+$ echo '{"keys":{"Q":2,  "Y":2,  "X":1,  "D":1}}' | fluent-cat input.sample
 ```
 
 output is
 ```
-2014-02-01 18:18:04 +0900 histo.localhost: {
-    "hist":[0,0,0,0,3,8,8,5,3,1],
-    "sum":7,"avg":0,"sd":3}
+2014-02-02 23:08:58 +0900 histo.sample.localhost: {
+    "hist":[0,0,2,4,2,0,0,0,0,1,5,7,3,0,1,7,12,7,1,0,0,0,0,0,0,0],
+    "sum":13,
+    "avg":0,
+    "sd":3
+}
 ```
 
 count up about you specified key, and make **histogramatic something**.
