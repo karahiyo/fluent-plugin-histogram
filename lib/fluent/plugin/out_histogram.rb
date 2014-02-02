@@ -98,7 +98,7 @@ module Fluent
       hists
     end
 
-    def increment(tag, key)
+    def increment(tag, key, v=1)
       @hists[tag] ||= @zero_hist.dup
 
       # id = key.hash % @bin_num
@@ -106,7 +106,7 @@ module Fluent
       @mutex.synchronize {
         (0..@alpha).each do |alpha|
           (-alpha..alpha).each do |al|
-            @hists[tag][(id + al) % @bin_num] += @tick
+            @hists[tag][(id + al) % @bin_num] += @tick * v
           end
         end
       }
@@ -117,34 +117,48 @@ module Fluent
 
       es.each do |time, record|
         keys = record[@count_key]
-        [keys].flatten.each do |k| 
-          if !@sampling
-            increment(tag, k)
-          else
-            @sampling_counter += 1
-            if @sampling_counter >= @sampling_rate 
-              increment(tag, k) 
-              @sampling_counter = 0
+        if keys.instance_of? Hash
+          keys.each do |k, v|
+            if !@sampling
+              increment(tag, k, v)
+            else
+              @sampling_counter += v
+              if @sampling_counter >= @sampling_rate
+                increment(tag, k, v)
+                @sampling_counter = 0
+              end
+            end
+          end
+        else
+          [keys].flatten.each do |k|
+            if !@sampling
+              increment(tag, k)
+            else
+              @sampling_counter += 1
+              if @sampling_counter >= @sampling_rate
+                increment(tag, k)
+                @sampling_counter = 0
+              end
             end
           end
         end
-      end
+      end # es.each }}}
     end
-    
+
     def tagging(flushed)
       tagged = {}
       tagged = Hash[ flushed.map do |tag, hist|
         tagged_tag = tag.dup
-        if @tag 
+        if @tag
           tagged_tag = @tag
         else
           if @input_tag_remove_prefix &&
-            ( ( tag.start_with?(@remove_prefix_string) && 
+            ( ( tag.start_with?(@remove_prefix_string) &&
                tag.length > @remove_prefix_length ) ||
                tag == @input_tag_remove_prefix)
             tagged_tag = tagged_tag[@input_tag_remove_prefix.length..-1]
           end
-          
+
           tagged_tag = @tag_prefix_string + tagged_tag if @tag_prefix
           tagged_tag << @tag_suffix_string if @tag_suffix
 

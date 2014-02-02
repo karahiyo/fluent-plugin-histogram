@@ -284,4 +284,32 @@ bias:#{flushed_bias["histo.localhost"]}")
     flushed = f.instance.flush
     assert_equal(false, flushed["test"].has_key?("hist"))
   end
+
+  def test_can_input_hash_record
+    bin_num = 10
+    f = create_driver(%[
+                        bin_num #{bin_num}
+                        alpha 0],
+                      "test.input")
+    f.run do
+      f.emit({"keys" => {"a" => 1, "b" => 2, "c" => 3}})
+    end
+    hist = f.instance.zero_hist.dup
+    id = "a"[0..9].codepoints.collect{|cp| cp}.join().to_i % bin_num
+    hist[id] += 1
+    id = "b"[0..9].codepoints.collect{|cp| cp}.join().to_i % bin_num
+    hist[id] += 2
+    id = "c"[0..9].codepoints.collect{|cp| cp}.join().to_i % bin_num
+    hist[id] += 3
+
+    sd = hist.instance_eval do
+      avg = inject(:+) / size
+      sigmas = map { |n| (avg - n)**2 }
+      Math.sqrt(sigmas.inject(:+) / size)
+    end
+    flushed = f.instance.flush
+    assert_equal({"test.input" => {:hist => hist, :sum => 6, :avg => 6/bin_num, :sd=>sd.to_i}}, flushed)
+  end
+
+
 end
