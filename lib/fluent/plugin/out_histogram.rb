@@ -175,11 +175,16 @@ module Fluent
       output = {}
       flushed.each do |tag, hist|
         output[tag] = {}
-        sum = hist.inject(:+)
-        avg = sum / hist.size
-        sd = hist.instance_eval do
-          sigmas = map { |n| (avg - n)**2 }
-          Math.sqrt(sigmas.inject(:+) / size)
+        act_hist = hist.dup.select!{|v| v > 0}
+        if act_hist.size == 0 # equal to zero_hist
+          sum, avg, sd = 0
+        else
+          sum = act_hist.inject(:+)
+          avg = sum / act_hist.size
+          sd = act_hist.instance_eval do
+            sigmas = map { |n| (avg - n)**2 }
+            Math.sqrt(sigmas.inject(:+) / size)
+          end
         end
         output[tag][:hist] = hist if @out_include_hist
         output[tag][:sum] = @disable_revalue ? sum : sum / @revalue

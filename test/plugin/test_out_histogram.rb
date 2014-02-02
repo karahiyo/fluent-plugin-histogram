@@ -53,12 +53,13 @@ class HistogramOutputTest < Test::Unit::TestCase
       hist[id] += 1
     end
 
-    sd = hist.instance_eval do
+    act_hist = hist.dup.select{|v| v > 0}
+    sd = act_hist.instance_eval do
       avg = inject(:+) / size
       sigmas = map { |n| (avg - n)**2 }
       Math.sqrt(sigmas.inject(:+) / size)
     end
-    assert_equal({"test.input" => {:hist => hist, :sum => 6, :avg => 6/bin_num, :sd=>sd.to_i}},
+    assert_equal({"test.input" => {:hist => hist, :sum => 6, :avg => 6/act_hist.size, :sd=>sd.to_i}},
                  f.instance.flush)
   end
 
@@ -98,12 +99,13 @@ class HistogramOutputTest < Test::Unit::TestCase
       hist[(id - alpha) % bin_num] += 1
     end
 
-    sd = hist.instance_eval do
+    act_hist = hist.select{|v| v > 0}
+    sd = act_hist.instance_eval do
       avg = inject(:+) / size
       sigmas = map { |n| (avg - n)**2 }
       Math.sqrt(sigmas.inject(:+) / size)
     end
-    assert_equal({"test.input" => {:hist => hist, :sum => 6, :avg => 6/bin_num, :sd=>sd.to_i}},
+    assert_equal({"test.input" => {:hist => hist, :sum => 6, :avg => 6/act_hist.size, :sd=>sd.to_i}},
                  f.instance.flush)
   end
 
@@ -156,8 +158,9 @@ class HistogramOutputTest < Test::Unit::TestCase
       f.instance.increment("test.input", i.to_s)
     end
     flushed = f.instance.flush
+    act_hist = flushed["test.input"][:hist].select{|v| v > 0}
     assert_equal(1000, flushed["test.input"][:sum])
-    assert_equal(1000/bin_num, flushed["test.input"][:avg])
+    assert_equal(1000/act_hist.size, flushed["test.input"][:avg])
   end
 
   def test_emit
@@ -171,8 +174,9 @@ class HistogramOutputTest < Test::Unit::TestCase
       end
     end
     flushed = f.instance.flush
+    act_hist = flushed["test"][:hist].select{|v| v > 0}
     assert_equal(300, flushed["test"][:sum])
-    assert_equal(300/bin_num, flushed["test"][:avg])
+    assert_equal(300/act_hist.size, flushed["test"][:avg])
   end
 
   def test_some_hist_exist_case_tagging_with_emit
@@ -302,13 +306,14 @@ bias:#{flushed_bias["histo.localhost"]}")
     id = "c"[0..9].codepoints.collect{|cp| cp}.join().to_i % bin_num
     hist[id] += 3
 
-    sd = hist.instance_eval do
+    act_hist = hist.dup.select{|v| v > 0}
+    sd = act_hist.instance_eval do
       avg = inject(:+) / size
       sigmas = map { |n| (avg - n)**2 }
       Math.sqrt(sigmas.inject(:+) / size)
     end
     flushed = f.instance.flush
-    assert_equal({"test.input" => {:hist => hist, :sum => 6, :avg => 6/bin_num, :sd=>sd.to_i}}, flushed)
+    assert_equal({"test.input" => {:hist => hist, :sum => 6, :avg => 6/act_hist.size, :sd=>sd.to_i}}, flushed)
   end
 
 
