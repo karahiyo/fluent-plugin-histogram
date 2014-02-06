@@ -177,7 +177,9 @@ module Fluent
         output[tag] = {}
         act_hist = hist.dup.select!{|v| v > 0}
         if act_hist.size == 0 # equal to zero_hist
-          sum, avg, sd = 0
+          sum = 0
+          avg = 0
+          sd = 0
         else
           sum = act_hist.inject(:+)
           avg = sum / act_hist.size

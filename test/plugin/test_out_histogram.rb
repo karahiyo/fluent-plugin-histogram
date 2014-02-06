@@ -316,5 +316,21 @@ bias:#{flushed_bias["histo.localhost"]}")
     assert_equal({"test.input" => {:hist => hist, :sum => 6, :avg => 6/act_hist.size, :sd=>sd.to_i}}, flushed)
   end
 
+  def test_output_zero_length_hist
+    bin_num = 5
+    f = create_driver(%[ bin_num #{bin_num} ])
+    flushed = f.instance.flush
+    assert_equal({}, flushed)
+
+    f.run do
+      f.emit({"keys" => "a"})
+    end
+    f.instance.flush # flush
+    flushed = f.instance.flush
+    assert_equal([0]*5, flushed["test"][:hist])
+    assert_equal(0, flushed["test"][:sum])
+    assert_equal(0, flushed["test"][:avg])
+    assert_equal(0, flushed["test"][:sd])
+  end
 
 end
