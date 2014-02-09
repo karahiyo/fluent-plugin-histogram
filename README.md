@@ -1,4 +1,4 @@
-# fluent-plugin-histogram
+# fluent-plugin-histogram, a plugin for [Fluentd](http://fluentd.org)
 
 Fluentd output plugin.
 
