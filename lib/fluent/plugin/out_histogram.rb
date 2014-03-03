@@ -103,9 +103,9 @@ module Fluent
 
       id = rough_hash(key)
       @mutex.synchronize {
-        (0..@alpha).each do |alpha|
-          (-alpha..alpha).each do |al|
-            @hists[tag][(id + al) % @bin_num] += @tick * v
+        (0..@alpha).each do |delta|
+          (-delta..delta).each do |x|
+            @hists[tag][(id + x) % @bin_num] += @tick * v
           end
         end
       }
