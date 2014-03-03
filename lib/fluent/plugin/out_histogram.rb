@@ -86,7 +86,7 @@ module Fluent
     end
 
 
-    ## Histogram plugin's method
+    ## Histogram plugin's methods
 
     def initialize_hists(tags=nil)
       hists = {}
@@ -101,8 +101,7 @@ module Fluent
     def increment(tag, key, v=1)
       @hists[tag] ||= @zero_hist.dup
 
-      # id = key.hash % @bin_num
-      id = key.to_s[0..9].codepoints.collect{|cp| cp}.join().to_i % @bin_num # attention to long key(length > 10)
+      id = rough_hash(key)
       @mutex.synchronize {
         (0..@alpha).each do |alpha|
           (-alpha..alpha).each do |al|
@@ -110,6 +109,11 @@ module Fluent
           end
         end
       }
+    end
+
+    def rough_hash(key)
+      # attention to long key(length > 10)
+      key.to_s[0..9].codepoints.collect{|cp| cp}.join.to_i % @bin_num
     end
 
     def emit(tag, es, chain)
