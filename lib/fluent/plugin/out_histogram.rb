@@ -25,6 +25,11 @@ module Fluent
     attr_accessor :zero_hist
     attr_accessor :remove_prefix_string
 
+    # To support router implemented in Fluentd v0.12.
+    unless method_defined?(:router)
+      define_method("router") { Fluent::Engine }
+    end
+
     ## fluentd output plugin's methods
 
     def initialize
@@ -208,7 +213,7 @@ module Fluent
     def flush_emit(now)
       flushed = flush
       flushed.each do |tag, data|
-        Fluent::Engine.emit(tag, now, data)
+        router.emit(tag, now, data)
       end
     end
 
