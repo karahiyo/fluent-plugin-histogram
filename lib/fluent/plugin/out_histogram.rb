@@ -20,10 +20,14 @@ module Fluent
 
     include Fluent::Mixin::ConfigPlaceholders
 
-    attr_accessor :flush_interval
     attr_accessor :hists
     attr_accessor :zero_hist
     attr_accessor :remove_prefix_string
+
+    # To support router implemented in Fluentd v0.12.
+    unless method_defined?(:router)
+      define_method("router") { Fluent::Engine }
+    end
 
     ## fluentd output plugin's methods
 
@@ -37,6 +41,7 @@ module Fluent
       raise Fluent::ConfigError, 'bin_num must be > 0' if @bin_num <= 0
       raise Fluent::ConfigError, 'sampling_rate must be >= 1' if @sampling_rate < 1
       $log.warn %Q[too small "bin_num(=#{@bin_num})" may raise unexpected outcome] if @bin_num < 100
+      @sampling = false
       @sampling = true if !!conf['sampling_rate']
 
       @tag_prefix_string = @tag_prefix + '.' if @tag_prefix
@@ -208,7 +213,7 @@ module Fluent
     def flush_emit(now)
       flushed = flush
       flushed.each do |tag, data|
-        Fluent::Engine.emit(tag, now, data)
+        router.emit(tag, now, data)
       end
     end
 
